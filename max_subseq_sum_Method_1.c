@@ -1,0 +1,182 @@
+// 2019-EE-069
+// Section : B
+#include <stdio.h>
+#include <stdlib.h>
+#include <Windows.h>
+#include <time.h>
+
+/*Define one of Cubic Algorithm, Quadratic Algorithm, NlogNAlgorithm, or
+Linear Algorithm to get that one algorithm compiled*/
+
+#define CubicAlgorithm
+
+#ifdef CubicAlgorithm // O(N^3) Algorithm
+
+int MaxSubsequenceSum(const int A[], int N)
+{
+	int ThisSum, MaxSum, i, j,k;
+	MaxSum = 0;
+	for (i = 0; i < N; i++)
+	{
+		for (j = i; j < N; j++)
+		{
+			ThisSum = 0;
+			for (k = i; k < N; k++)
+			{
+				ThisSum += A[k];
+			}
+			if (ThisSum > MaxSum)
+				MaxSum = ThisSum;
+		}
+	}
+	return MaxSum;
+}
+
+#endif
+
+#ifdef QuadraticAlgorithm // O(N^2) Algorithm
+
+int MaxSubsequenceSum(const int A[], int N)
+{
+	int ThisSum, MaxSum, i, j;
+	MaxSum = 0;
+	for (i = 0; i < N; i++)
+	{
+		ThisSum = 0;
+		for (j = i; j < N; j++)
+		{
+			ThisSum += A[j];
+		}
+		if (ThisSum > MaxSum)
+			MaxSum = ThisSum;
+	}
+	return MaxSum;
+}
+
+#endif
+
+#ifdef NlogNAlgorithm // O(N log(N)) Algorithm
+
+static int Max3(int A, int B, int C)
+{
+	return A > B ? A > C ? A : C : B > C ? B : C;
+}
+
+static int MaxSubSum(const int A[], int Left, int Right)
+{
+	int MaxLeftSum, MaxRightSum;
+	int MaxLeftBorderSum, MaxRightBorderSum;
+	int LeftBorderSum, RightBorderSum;
+	int Center, i;
+
+	if (Left == Right) //Base Case
+		if (A[Left > 0])
+			return A[Left];
+		else
+			return 0;
+
+	Center = (Left + Right) / 2;
+	MaxLeftSum = MaxSubSum(A, Left, Center);
+	MaxRightSum = MaxSubSum(A, Center + 1, Right);
+	MaxLeftBorderSum = 0;
+	LeftBorderSum = 0;
+
+	for (i = Center; i >= Left; i--)
+	{
+		LeftBorderSum += A[i];
+		if (LeftBorderSum > MaxLeftBorderSum)
+			MaxLeftBorderSum = LeftBorderSum;
+	}
+
+	MaxRightBorderSum = 0;
+	RightBorderSum = 0;
+
+	for (i = Center + 1; i <= Right; i++)
+	{
+		RightBorderSum += A[i];
+		if (RightBorderSum > MaxRightBorderSum)
+			MaxRightBorderSum = RightBorderSum;
+	}
+	return Max3(MaxLeftSum, MaxRightSum, MaxLeftBorderSum + MaxRightBorderSum);
+}
+
+int MaxSubsequenceSum(const int A[], int N)
+{
+	return MaxSubSum(A, 0, N - 1);
+}
+
+#endif
+
+#ifdef LinearAlgorithm // O(N) Algorithm
+
+int MaxSubsequenceSum(const int A[], int N)
+{
+	int ThisSum, MaxSum, j;
+	ThisSum = 0;
+	MaxSum = 0;
+
+	for (j = 0; j < N; j++)
+	{
+		ThisSum += A[j];
+		if (ThisSum > MaxSum)
+			MaxSum = ThisSum;
+		else if (ThisSum < 0)
+			ThisSum = 0;
+	}
+
+	return MaxSum;
+}
+
+#endif
+
+#define 	TOTAL_SIZE 	100000000
+#define 	N_START		10
+#define 	N_END		(N_START*1000)
+
+int main() {
+
+    //C library function clock_t returns the number of clock ticks elapsed since the program was launched
+	clock_t start, end;
+	int roll_no = 72, sum;
+	// Dynamic memory allocation
+	int *data = malloc(TOTAL_SIZE*sizeof(int));
+	// run_time is a variable of type double to store the running time of algorithm. Type is double because
+	// we need floating point number, integers numbers has large possiblity of error in calculation
+	double run_time;
+
+    // operations in this for loop able to calculate running time of different input sizes
+    // from N_START to N_END
+    for (int N = N_START; N <= N_END; N *= 10) {
+
+        // Seed for generating specific set of random numbers
+		srand(roll_no);
+		for (int k = 0; k < N; ++k) {
+            // Store numbers in array
+			data[k] = rand() % 10;
+		}
+        // start stores the ticks before running of algorithm
+        // Check it by uncommenting line 158
+		start = clock(); //start time
+		// printf("%d\n", start);
+
+        // Any code whose execution time is to be checked
+		sum = MaxSubsequenceSum(data, N);
+
+        // end stores the number of ticks after execution of algorithm
+        // Check it by uncommenting line 166
+        end = clock(); // end time
+        //printf("%d\n", end);
+
+        // Calculate time in second by taking difference of end and start time
+        // and divide the difference by CLOCKS_PER_SEC
+        run_time = (end - start) / ((double)CLOCKS_PER_SEC);
+        // printf("%d\n", CLOCKS_PER_SEC);
+
+        // Print the running time of algorithm written above
+        printf("the run time of code is: %g\n", run_time);
+
+    }
+    // Free the dynamically allocated memory
+    free(data);
+	return 0;
+}
